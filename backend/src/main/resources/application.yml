@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: blog-api
+
+  datasource:
+    # ${ENV_VAR:default} -> use env var if set, otherwise the default.
+    # In production you NEVER hardcode credentials; they come from the environment.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/blog}
+    username: ${DB_USERNAME:blog}
+    password: ${DB_PASSWORD:blog}
+
+  jpa:
+    hibernate:
+      # 'validate' = Hibernate only CHECKS that entities match the DB schema.
+      # The schema itself is created by Flyway migrations (best practice).
+      # Never use 'update'/'create' in real projects.
+      ddl-auto: validate
+    # Disable Open Session In View: sessions must not leak into the web layer.
+    # Forces you to fetch everything you need inside the service/transaction.
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+
+app:
+  jwt:
+    # HMAC-SHA256 signing key, base64 encoded, at least 256 bits.
+    # Generated with: openssl rand -base64 64
+    secret: ${JWT_SECRET:6HkPnxhObVyLUb4Sx9ibogh46sDxx4FTkX2A8i1dqycOLmLgJa6jab0tYaubGQjS2PBlVCMMZj/Zr7hyNn1ajg==}
+    access-token-expiration: 900000      # 15 minutes (ms)
+    refresh-token-expiration: 604800000  # 7 days (ms)
+  cors:
+    allowed-origin-patterns:
+      - http://localhost:*
+      - http://127.0.0.1:*
+      - http://[::1]:*
+
+logging:
+  level:
+    org.hibernate.SQL: debug   # log every SQL statement (dev only)
